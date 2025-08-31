@@ -8,8 +8,8 @@ A lightweight macOS menu bar app that automatically converts copied Markdown tex
 
 ✨ **What it does**
 - Watches your clipboard for Markdown text
-- Automatically adds rich text formatting (bold, italic, headers, lists, links, code blocks)
-- Keeps both the original Markdown AND the formatted version
+- Accurately converts Markdown formatting (bold, italic, headers, lists, links, code blocks) 
+- Keeps both the original Markdown and the rich text formatted version
 - Works seamlessly with your existing clipboard manager
 - Uses external API for accurate Markdown conversion with browser-style formatting
 
