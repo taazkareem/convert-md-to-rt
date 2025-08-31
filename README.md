@@ -1,7 +1,7 @@
 MD→RT
 =====
 
-A lightweight macOS menu bar app that automatically converts copied Markdown text to rich text formatting while preserving the original.
+A lightweight macOS menu bar app that automatically converts copied Markdown text to Rich Text formatting while preserving the original.
 
 ✨ **What it does**
 - Watches your clipboard for Markdown text
