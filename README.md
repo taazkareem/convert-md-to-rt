@@ -43,7 +43,7 @@ That's it! The app runs quietly in your menu bar and works automatically by simp
 💡 **Pro Use Case**
 - Copy LLM outputs directly into ClickUp task descriptions with formatting
 - Easily send Apple Mail with checkmarked lists or code blocks
-- And So Much More!
+- Many more
 
 ---
 
