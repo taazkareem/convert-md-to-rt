@@ -1,5 +1,8 @@
 MD→RT
 =====
+[![PyPI version](https://img.shields.io/pypi/v/convert-md-to-rt.svg?logo=pypi&label=PyPI)](https://pypi.org/project/convert-md-to-rt/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?logo=opensourceinitiative&label=License)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/taazkareem/convert-md-to-rt/publish.yml?branch=main&logo=github&label=CI)](https://github.com/taazkareem/convert-md-to-rt/actions)
 
 A lightweight macOS menu bar app that automatically converts copied Markdown text to Rich Text formatting while preserving the original.
 
@@ -29,22 +32,21 @@ md2rt-menubar
 ```
 
 **How to use:**
+
 - Copy any Markdown text (like `**bold**` or `# Heading`)
 - Paste into rich text apps (ClickUp, TextEdit, Word, etc.) → you'll see formatting!
-- Paste into plain text apps → you'll see original Markdown
+- Paste into plain text apps → you'll see original Markdown!
 - Control via menu bar: Start/Stop/Quit
 
-That's it! The app runs quietly in your menu bar and works automatically.
+That's it! The app runs quietly in your menu bar and works automatically by simply detecting Markdown content.
 
-💡 **Practical Use Cases**
-- Copy LLM outputs or prompt templates into ClickUp task descriptions
-- Move README snippets into Google Docs with correct headings and lists
-- Paste meeting notes from Markdown into Apple Notes or Pages with styling
-- Keep pure Markdown when pasting into terminals, editors, or GitHub fields
-- Transfer API specs into Confluence or Notion with links and code blocks
-- Drop checklists into Outlook or Apple Mail as rich text
-- Build proposals in Word by pasting Markdown content with formatting preserved
+💡 **Pro Use Case**
+- Copy LLM outputs directly into ClickUp task descriptions with formatting
+- Easily send Apple Mail with checkmarked lists or code blocks
+- And So Much More!
 
 ---
 
-[ClickUp](https://clickup.com) One app to replace them all
+ **Acknowledgments**
+- Conversion Powered by [Switchlabs](https://www.switchlabs.dev/)
+- [ClickUp](https://clickup.com) One app to replace them all
