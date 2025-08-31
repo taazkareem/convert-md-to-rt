@@ -54,4 +54,7 @@ coverage.xml
 
 # Local caches and app-specific
 .md2rt/
-# End of Selection
+
+# 1Password CLI configuration
+.op/
+.op/*
