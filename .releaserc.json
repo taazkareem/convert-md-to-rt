@@ -1,0 +1,36 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/github",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "echo '${nextRelease.version}' > .version && sed -i 's/version = \".*\"/version = \"${nextRelease.version}\"/' pyproject.toml && sed -i 's/__version__ = \".*\"/__version__ = \"${nextRelease.version}\"/' src/md2rt/__init__.py"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "src/md2rt/__init__.py",
+          "pyproject.toml",
+          ".version"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ]
+  ],
+  "preset": "angular",
+  "tagFormat": "v${version}",
+  "releaseRules": [
+    {"type": "docs", "release": false},
+    {"type": "style", "release": false},
+    {"type": "refactor", "release": false},
+    {"type": "test", "release": false},
+    {"type": "chore", "release": false},
+    {"type": "ci", "release": false},
+    {"type": "build", "release": false}
+  ]
+}
