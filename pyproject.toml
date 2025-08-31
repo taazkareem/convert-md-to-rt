@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "convert-md-to-rt"
 version = "0.2.0"
-description = "macOS clipboard tool that converts Markdown to rich text formatting"
+description = "macOS clipboard tool that converts Markdown to Rich Text formatting"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
