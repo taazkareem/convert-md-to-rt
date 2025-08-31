@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "convert-md-to-rt"
+version = "0.1.0"
+description = "macOS clipboard tool that converts Markdown to rich text formatting"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Talib Kareem", email = "your-email@example.com"},
+]
+keywords = ["markdown", "rich-text", "clipboard", "macos", "menubar"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Desktop Environment",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Utilities",
+]
+dependencies = [
+  "pyobjc>=10.0",
+  "rumps>=0.4.0",
+]
+
+[project.scripts]
+md2rt = "md2rt.runner:main"
+md2rt-menubar = "md2rt.menubar:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+

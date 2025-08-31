@@ -1,0 +1,57 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+wheels/
+*.manifest
+*.spec
+
+# Python virtual environments
+.venv/
+.venv*/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Python test outputs
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+
+# Python type checker
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# Python logs
+*.log
+
+# IDEs/editors
+.vscode/
+.idea/
+*.swp
+
+# Local caches and app-specific
+.md2rt/
+# End of Selection
