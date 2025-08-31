@@ -1,8 +1,7 @@
 name: Publish to PyPI
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   release:
@@ -43,27 +42,17 @@ jobs:
           git config --local user.name "GitHub Action"
       
       - name: Semantic Release
-        id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx semantic-release
-          if [ $? -eq 0 ]; then
-            echo "new_release_published=true" >> $GITHUB_OUTPUT
-          else
-            echo "new_release_published=false" >> $GITHUB_OUTPUT
-          fi
+        run: npx semantic-release
       
       - name: Build package
-        if: steps.release.outputs.new_release_published == 'true'
         run: python -m build
       
       - name: Check package
-        if: steps.release.outputs.new_release_published == 'true'
         run: twine check dist/*
       
       - name: Publish to PyPI
-        if: steps.release.outputs.new_release_published == 'true'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
