@@ -17,7 +17,7 @@ MD→RT is a simple menubar app that automatically converts Markdown text in you
 
 **One-liner (recommended):**
 ```bash
-curl -L -o run_md2rt.command https://raw.githubusercontent.com/taazkareem/convert-md-to-rt/main/run_md2rt.command && chmod +x run_md2rt.command && ./run_md2rt.command
+git clone https://github.com/taazkareem/convert-md-to-rt.git && cd convert-md-to-rt && ./run_md2rt.command
 ```
 
 **How to use:**
