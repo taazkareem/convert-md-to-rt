@@ -10,6 +10,9 @@ import rumps
 import re
 import subprocess
 import os
+import json
+import base64
+import urllib.request
 from AppKit import NSPasteboard, NSObject
 from Foundation import NSData, NSString, NSUTF8StringEncoding
 
@@ -35,16 +38,18 @@ def is_markdown(text):
     
     # Common markdown patterns
     patterns = [
-        r'\*\*.*?\*\*',      # **bold**
-        r'\*.*?\*',          # *italic*
-        r'`.*?`',            # `code`
-        r'#+\s+',            # # heading
-        r'\[.*?\]\(.*?\)',   # [link](url)
-        r'!\[.*?\]\(.*?\)',  # ![alt](url)
-        r'^\s*[-*+]\s+',     # - list item
-        r'^\s*\d+\.\s+',     # 1. numbered list
-        r'^\s*>\s+',         # > blockquote
-        r'```[\s\S]*?```',   # ```code block```
+        r'\*\*.*?\*\*',  # Bold
+        r'\*.*?\*',      # Italic
+        r'^#\s+',        # Headers
+        r'^##\s+',       # Subheaders
+        r'^###\s+',      # Subsubheaders
+        r'^\s*[-*+]\s+', # Unordered lists
+        r'^\s*\d+\.\s+', # Ordered lists
+        r'`.*?`',        # Inline code
+        r'```[\s\S]*?```', # Code blocks
+        r'^\s*>\s+',     # Blockquotes
+        r'\[.*?\]\(.*?\)', # Links
+        r'!\[.*?\]\(.*?\)', # Images
     ]
     
     for pattern in patterns:
@@ -53,114 +58,108 @@ def is_markdown(text):
     
     return False
 
-def simple_markdown_to_html(md_text):
-    """Convert markdown to HTML using simple regex replacements."""
-    html = md_text
+def markdown_to_html_via_api(text: str) -> str:
+    """Convert markdown text to HTML using external API."""
+    url = 'https://hook.us1.make.com/2jf9wjjs1oupgxbt5t8w5brrkqt7gjxv'
     
-    # Headers
-    html = re.sub(r'^### (.*?)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
-    html = re.sub(r'^## (.*?)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
-    html = re.sub(r'^# (.*?)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
+    # Prepare the request data
+    data = {
+        'markdownText': text
+    }
     
-    # Bold and italic
-    html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html)
-    html = re.sub(r'\*(.*?)\*', r'<em>\1</em>', html)
+    # Convert to JSON
+    json_data = json.dumps(data).encode('utf-8')
     
-    # Inline code
-    html = re.sub(r'`(.*?)`', r'<code>\1</code>', html)
+    # Create the request
+    req = urllib.request.Request(
+        url,
+        data=json_data,
+        headers={
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+            'Content-Type': 'application/json',
+            'Referer': 'https://www.switchlabs.dev/'
+        }
+    )
     
-    # Code blocks
-    html = re.sub(r'```([\s\S]*?)```', r'<pre><code>\1</code></pre>', html)
+    # Make the request
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            response_text = response.read().decode('utf-8')
+            
+            # Check if response is a base64 data URL
+            if response_text.startswith('data:application/octet-stream;base64,'):
+                # Extract the base64 part and decode it
+                base64_data = response_text.split(',', 1)[1]
+                html = base64.b64decode(base64_data).decode('utf-8')
+                return html.strip()
+            else:
+                # Response is plain HTML
+                return response_text.strip()
+                
+    except Exception as e:
+        # Fallback to basic HTML if API fails
+        log.error(f"API conversion failed: {e}")
+        return f"<p>{text}</p>"
+
+def add_browser_styling_to_html(html: str) -> str:
+    """Add browser-style inline CSS to HTML elements for proper clipboard formatting."""
     
-    # Lists
-    html = re.sub(r'^\s*[-*+]\s+(.*?)$', r'<li>\1</li>', html, flags=re.MULTILINE)
-    html = re.sub(r'^\s*\d+\.\s+(.*?)$', r'<li>\1</li>', html, flags=re.MULTILINE)
+    # Add meta charset
+    if not html.startswith('<meta'):
+        html = "<meta charset='utf-8'>" + html
     
-    # Wrap consecutive list items in <ul> tags
-    lines = html.split('\n')
-    in_list = False
-    result_lines = []
+    # Style h1 elements
+    html = re.sub(
+        r'<h1([^>]*)>',
+        r'<h1\1 style="color: rgb(0, 0, 0); font-family: Times; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">',
+        html
+    )
     
-    for line in lines:
-        if line.strip().startswith('<li>'):
-            if not in_list:
-                result_lines.append('<ul>')
-                in_list = True
-            result_lines.append(line)
-        else:
-            if in_list:
-                result_lines.append('</ul>')
-                in_list = False
-            result_lines.append(line)
+    # Style p elements
+    html = re.sub(
+        r'<p([^>]*)>',
+        r'<p\1 style="color: rgb(0, 0, 0); font-family: Times; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">',
+        html
+    )
     
-    if in_list:
-        result_lines.append('</ul>')
+    # Explicitly close any open lists before code blocks to break list context
+    # First remove any existing style attributes from pre tags
+    html = re.sub(r'<pre([^>]*?)style="[^"]*"([^>]*)>', r'<pre\1\2>', html)
     
-    html = '\n'.join(result_lines)
+    # Insert explicit list closure before each pre block to break list context
+    html = re.sub(
+        r'<pre([^>]*)>(.*?)</pre>',
+        r'</ol></ul><pre\1 style="display: block; color: rgb(0, 0, 0); font-family: Monaco, Menlo, Consolas, monospace; font-size: 13px; background-color: rgb(248, 248, 248); border: 1px solid rgb(231, 231, 231); border-radius: 3px; padding: 16px; margin: 16px 0; overflow-x: auto; white-space: pre;">\2</pre>',
+        html,
+        flags=re.DOTALL
+    )
     
-    # Blockquotes
-    html = re.sub(r'^\s*>\s+(.*?)$', r'<blockquote>\1</blockquote>', html, flags=re.MULTILINE)
+    # Style code elements within pre blocks
+    # First remove any existing style attributes from code tags
+    html = re.sub(r'<code([^>]*?)style="[^"]*"([^>]*)>', r'<code\1\2>', html)
+
+    # Then add simple styling
+    html = re.sub(
+        r'<code([^>]*)>',
+        r'<code\1 style="font-family: Monaco, Menlo, Consolas, monospace; font-size: 13px; color: rgb(51, 51, 51); background: transparent;">',
+        html
+    )
     
-    # Links
-    html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html)
-    
-    # Images
-    html = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img src="\2" alt="\1">', html)
-    
-    # Paragraphs (wrap non-tag lines in <p> tags)
-    lines = html.split('\n')
-    result_lines = []
-    current_paragraph = []
-    
-    for line in lines:
-        line = line.strip()
-        if not line:
-            if current_paragraph:
-                result_lines.append('<p>' + ' '.join(current_paragraph) + '</p>')
-                current_paragraph = []
-        elif line.startswith('<') and line.endswith('>'):
-            if current_paragraph:
-                result_lines.append('<p>' + ' '.join(current_paragraph) + '</p>')
-                current_paragraph = []
-            result_lines.append(line)
-        else:
-            current_paragraph.append(line)
-    
-    if current_paragraph:
-        result_lines.append('<p>' + ' '.join(current_paragraph) + '</p>')
-    
-    html = '\n'.join(result_lines)
+    # Add non-breaking spaces around strong elements (like browser does)
+    html = re.sub(r'<strong>', '<span>\xa0</span><strong>', html)
+    html = re.sub(r'</strong>', '</strong><span>\xa0</span>', html)
     
     return html
 
 def markdown_to_styled_html_and_text(md_text):
-    """Convert markdown to styled HTML."""
-    # Convert markdown to HTML using our simple parser
-    html = simple_markdown_to_html(md_text)
+    """Convert markdown to styled HTML using external API."""
+    # Get HTML from API
+    html = markdown_to_html_via_api(md_text)
     
-    # Add basic styling
-    styled_html = f"""
-    <meta charset='utf-8'>
-    <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; margin: 20px; }}
-        h1, h2, h3, h4, h5, h6 {{ color: #333; margin-top: 24px; margin-bottom: 16px; }}
-        h1 {{ font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
-        h2 {{ font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
-        h3 {{ font-size: 1.25em; }}
-        p {{ margin-bottom: 16px; }}
-        blockquote {{ padding: 0 1em; color: #6a737d; border-left: 0.25em solid #dfe2e5; margin: 0 0 16px 0; }}
-        code {{ background-color: rgba(27,31,35,0.05); border-radius: 3px; font-size: 85%; margin: 0; padding: 0.2em 0.4em; }}
-        pre {{ background-color: #f6f8fa; border-radius: 6px; font-size: 85%; line-height: 1.45; overflow: auto; padding: 16px; }}
-        pre code {{ background-color: transparent; padding: 0; }}
-        ul, ol {{ padding-left: 2em; }}
-        li {{ margin-bottom: 0.25em; }}
-        a {{ color: #0366d6; text-decoration: none; }}
-        a:hover {{ text-decoration: underline; }}
-        img {{ max-width: 100%; }}
-    </style>
-    {html}
-    """
+    # Add browser-style inline CSS
+    styled_html = add_browser_styling_to_html(html)
     
+    # Return styled HTML and original markdown text
     return styled_html, md_text
 
 def read_plain_text_from_pasteboard():
