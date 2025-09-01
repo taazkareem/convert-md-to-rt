@@ -45,6 +45,11 @@ Perfect for developers, writers, and anyone who works with formatted text!
 
 ## 🚀 Quick Start
 
+**Prerequisites:**
+```bash
+brew install pipx
+```
+
 **Option 1: PyPI Install (recommended):**
 ```bash
 pipx run convert-md-to-rt
