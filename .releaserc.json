@@ -7,7 +7,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "python -c \"import re; content=open('pyproject.toml').read(); open('pyproject.toml', 'w').write(re.sub(r'version = \\\"[^\\\"]+\\\"', 'version = \\\"${nextRelease.version}\\\"', content))\" && python -c \"import re; content=open('src/md2rt/__init__.py').read(); open('src/md2rt/__init__.py', 'w').write(re.sub(r'__version__ = \\\"[^\\\"]+\\\"', '__version__ = \\\"${nextRelease.version}\\\"', content))\""
+        "prepareCmd": "python -c \"import re; content=open('pyproject.toml').read(); open('pyproject.toml', 'w').write(re.sub(r'version = \\\"[^\\\"]+\\\"', 'version = \\\"${nextRelease.version}\\\"', content))\" && python -c \"import re; content=open('src/md2rt/__init__.py').read(); open('src/md2rt/__init__.py', 'w').write(re.sub(r'__version__ = \\\"[^\\\"]+\\\"', '__version__ = \\\"${nextRelease.version}\\\"', content))\" && echo \"${nextRelease.version}\" > .version"
       }
     ],
     [
@@ -15,7 +15,8 @@
       {
         "assets": [
           "src/md2rt/__init__.py",
-          "pyproject.toml"
+          "pyproject.toml",
+          ".version"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
