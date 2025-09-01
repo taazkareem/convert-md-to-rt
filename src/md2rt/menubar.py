@@ -6,7 +6,7 @@ MD→RT Menubar App - Consolidated version with configurable logging
 import threading
 import time
 import logging
-import rumps
+from . import rumps
 import re
 import os
 import argparse
