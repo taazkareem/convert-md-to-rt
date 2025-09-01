@@ -54,7 +54,7 @@ pipx run convert-md-to-rt
 
 **Option 2: From Source:**
 ```bash
-git clone https://github.com/taazkareem/convert-md-to-rt.git && cd convert-md-to-rt && ./run_md2rt.command
+git clone https://github.com/taazkareem/convert-md-to-rt.git && cd convert-md-to-rt && python3 -m src.md2rt.menubar
 ```
 
 **How to use:**
