@@ -20,6 +20,11 @@ MD→RT is a simple menubar app that automatically converts Markdown text in you
 git clone https://github.com/taazkareem/convert-md-to-rt.git && cd convert-md-to-rt && ./run_md2rt.command
 ```
 
+**Alternative (if you prefer to download just the script):**
+```bash
+curl -L -o run_md2rt.command "https://raw.githubusercontent.com/taazkareem/convert-md-to-rt/main/run_md2rt.command?$(date +%s)" && chmod +x run_md2rt.command && ./run_md2rt.command
+```
+
 **How to use:**
 - Copy any Markdown text (like `**bold**` or `# Heading`)
 - Paste into rich text apps (ClickUp, TextEdit, Word, etc.) → you'll see formatting!
