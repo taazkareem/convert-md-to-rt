@@ -1,37 +1,69 @@
 # MD→RT (Markdown to Rich Text)
 
-**The easiest way to convert Markdown to Rich Text on macOS - no terminal required!**
+[![macOS](https://img.shields.io/badge/macOS-13.0+-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Security](https://img.shields.io/badge/Safe%20%26%20Secure-Yes-brightgreen?logo=shield&logoColor=white)](#)
+[![Build Status](https://github.com/taazkareem/convert-md-to-rt/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/taazkareem/convert-md-to-rt/actions/workflows/publish.yml)
+[![PyPI version](https://img.shields.io/pypi/v/convert-md-to-rt.svg?logo=pypi&label=PyPI)](https://pypi.org/project/convert-md-to-rt/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?logo=opensourceinitiative&label=License)](https://opensource.org/licenses/MIT)
 
-MD→RT is a simple menubar app that automatically converts Markdown text in your clipboard to Rich Text formatting. Just copy Markdown from anywhere (ChatGPT, GitHub, etc.) and paste it into any rich text app - it will be automatically converted!
+**The easiest way to convert Markdown to Rich Text on macOS!**
+
+MD→RT automatically converts Markdown in your clipboard to Rich Text formatting. Copy from anywhere, paste anywhere - it's that simple!
+
+## 🎯 Overview
+
+<div align="center">
+<table>
+<tr>
+<td align="center" width="200">
+<img src="./src/assets/images/icon.png" alt="MD→RT Logo" width="150">
+</td>
+<td align="left" width="400">
+
+**Transform your workflow with instant Markdown-to-Rich Text conversion**
+
+Perfect for developers, writers, and anyone who works with formatted text!
+
+</td>
+</tr>
+</table>
+</div>
+
+<div align="center">
+
+
+</div>
 
 ## ✨ Features
 
-- **Automatic Conversion**: Copy Markdown, paste Rich Text - it's that simple!
-- **Menubar Integration**: Runs quietly in your menu bar
-- **Real-time Monitoring**: Watches your clipboard for Markdown content
-- **Smart Detection**: Only converts actual Markdown, ignores plain text
-- **Preserves Original**: Keeps the original Markdown text as a fallback
-- **Zero Configuration**: Works out of the box
+- **🚀 Zero Setup**: Install and run - no configuration needed
+- **📱 Menubar Integration**: Runs quietly in your menu bar
+- **🔄 Real-time Monitoring**: Watches your clipboard for Markdown content
+- **🎯 Smart Detection**: Only converts actual Markdown, ignores plain text
+- **💾 Preserves Original**: Keeps original text as fallback
 
 ## 🚀 Quick Start
 
-**One-liner (recommended):**
+**Option 1: PyPI Install (recommended):**
+```bash
+pipx run convert-md-to-rt
+```
+
+*Available logging levels: `--quiet`, `--verbose`, `--debug`*
+
+**Option 2: From Source:**
 ```bash
 git clone https://github.com/taazkareem/convert-md-to-rt.git && cd convert-md-to-rt && ./run_md2rt.command
 ```
 
-**Alternative (if you prefer to download just the script):**
-```bash
-curl -L -o run_md2rt.command "https://raw.githubusercontent.com/taazkareem/convert-md-to-rt/main/run_md2rt.command?$(date +%s)" && chmod +x run_md2rt.command && ./run_md2rt.command
-```
-
 **How to use:**
 - Copy any Markdown text (like `**bold**` or `# Heading`)
-- Paste into rich text apps (ClickUp, TextEdit, Word, etc.) → you'll see formatting!
+- Paste into rich text apps → you'll see formatting!
 - Paste into plain text apps → you'll see original Markdown!
 - Control via menu bar: Start/Stop/Quit
 
-That's it! The app runs quietly in your menu bar and works automatically by simply detecting Markdown content.
+The app runs quietly in your menu bar and works automatically!
 
 💡 **Pro Use Case**
 - Copy LLM outputs directly into ClickUp task descriptions with formatting
@@ -39,6 +71,16 @@ That's it! The app runs quietly in your menu bar and works automatically by simp
 - Many more
 
 ## 🛠️ Development
+
+### How It Works Under The Hood
+MD→RT converts Markdown to Rich Text by:
+1. **Detecting Markdown** in clipboard using regex patterns
+2. **Converting to HTML** via external API and built-in parser
+3. **Adding browser styling** for consistent formatting
+4. **Placing styled HTML** in clipboard (preserving original Markdown)
+5. **Rich Text apps** render the HTML as formatted text
+
+*Note: End users see Rich Text, not HTML - the conversion is seamless.*
 
 ### Prerequisites
 - Python 3.9+
@@ -70,8 +112,7 @@ pytest
 ```
 src/md2rt/
 ├── __init__.py
-├── menubar_debug.py    # Main menubar app (working version)
-├── menubar.py          # Core menubar functionality
+├── menubar.py          # Main menubar app (consolidated)
 ├── detector.py         # Markdown detection logic
 ├── converter.py        # Markdown to HTML conversion
 ├── clipboard.py        # Clipboard operations
@@ -88,12 +129,7 @@ This is an open-source project! Contributions are welcome:
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
 ## 🙏 Acknowledgments
 
-**Acknowledgments**
 - Conversion Powered by [Switchlabs](https://www.switchlabs.dev/)
 - [ClickUp](https://clickup.com) One app to replace them all
