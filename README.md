@@ -62,8 +62,6 @@ pipx run convert-md-to-rt
 git clone https://github.com/taazkareem/convert-md-to-rt.git && cd convert-md-to-rt && python3 -m src.md2rt.menubar
 ```
 
-*Note: Source installation requires `rumps` to be installed separately: `pip install rumps`*
-
 **How to use:**
 - Copy any Markdown text (like `**bold**` or `# Heading`)
 - Paste into rich text apps → you'll see formatting!
