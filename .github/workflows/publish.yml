@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: Release and Publish to PyPI
 
 on:
   workflow_dispatch:
@@ -61,5 +61,5 @@ jobs:
             echo "Error: PYPI_API_TOKEN secret not set"
             exit 1
           fi
-          echo "Publishing to PyPI production..."
+          echo "Publishing package to PyPI..."
           twine upload dist/*
