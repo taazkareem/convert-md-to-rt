@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
   "pyobjc>=10.0",
-  "rumps>=0.4.0",
+  "rumps @ git+https://github.com/jaredks/rumps.git",
 ]
 
 [project.scripts]

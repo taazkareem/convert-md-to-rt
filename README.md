@@ -1,38 +1,26 @@
-MD→RT
-=====
-[![PyPI version](https://img.shields.io/pypi/v/convert-md-to-rt.svg?logo=pypi&label=PyPI)](https://pypi.org/project/convert-md-to-rt/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?logo=opensourceinitiative&label=License)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/taazkareem/convert-md-to-rt/publish.yml?branch=main&logo=github&label=CI)](https://github.com/taazkareem/convert-md-to-rt/actions)
+# MD→RT (Markdown to Rich Text)
 
-A lightweight macOS menu bar app that automatically converts copied Markdown text to Rich Text formatting while preserving the original.
+**The easiest way to convert Markdown to Rich Text on macOS - no terminal required!**
 
-✨ **What it does**
-- Watches your clipboard for Markdown text
-- Accurately converts Markdown formatting (bold, italic, headers, lists, links, code blocks) 
-- Keeps both the original Markdown and the rich text formatted version
-- Works seamlessly with your existing clipboard manager
-- Uses external API for accurate Markdown conversion with browser-style formatting
+MD→RT is a simple menubar app that automatically converts Markdown text in your clipboard to Rich Text formatting. Just copy Markdown from anywhere (ChatGPT, GitHub, etc.) and paste it into any rich text app - it will be automatically converted!
 
-🚀 **Quick Start**
+## ✨ Features
+
+- **Automatic Conversion**: Copy Markdown, paste Rich Text - it's that simple!
+- **Menubar Integration**: Runs quietly in your menu bar
+- **Real-time Monitoring**: Watches your clipboard for Markdown content
+- **Smart Detection**: Only converts actual Markdown, ignores plain text
+- **Preserves Original**: Keeps the original Markdown text as a fallback
+- **Zero Configuration**: Works out of the box
+
+## 🚀 Quick Start
 
 **One-liner (recommended):**
 ```bash
-pipx install convert-md-to-rt && md2rt-menubar
-```
-
-**Alternative methods:**
-```bash
-# From source (developers)
-git clone https://github.com/taazkareem/convert-md-to-rt.git
-cd convert-md-to-rt
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-md2rt-menubar
+curl -L -o run_md2rt.command https://raw.githubusercontent.com/taazkareem/convert-md-to-rt/main/run_md2rt.command && chmod +x run_md2rt.command && ./run_md2rt.command
 ```
 
 **How to use:**
-
 - Copy any Markdown text (like `**bold**` or `# Heading`)
 - Paste into rich text apps (ClickUp, TextEdit, Word, etc.) → you'll see formatting!
 - Paste into plain text apps → you'll see original Markdown!
@@ -45,8 +33,62 @@ That's it! The app runs quietly in your menu bar and works automatically by simp
 - Easily send Apple Mail with checkmarked lists or code blocks
 - Many more
 
----
+## 🛠️ Development
 
- **Acknowledgments**
+### Prerequisites
+- Python 3.9+
+- macOS (required for clipboard access)
+
+### Setup
+```bash
+# Clone the repository
+git clone https://github.com/taazkareem/convert-md-to-rt.git
+cd convert-md-to-rt
+
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install development dependencies
+pip install -e ".[dev]"
+```
+
+### Running Tests
+```bash
+pytest
+```
+
+### Project Structure
+```
+src/md2rt/
+├── __init__.py
+├── menubar_debug.py    # Main menubar app (working version)
+├── menubar.py          # Core menubar functionality
+├── detector.py         # Markdown detection logic
+├── converter.py        # Markdown to HTML conversion
+├── clipboard.py        # Clipboard operations
+└── runner.py           # Command-line runner
+```
+
+## 🤝 Contributing
+
+This is an open-source project! Contributions are welcome:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## 🙏 Acknowledgments
+
+**Acknowledgments**
 - Conversion Powered by [Switchlabs](https://www.switchlabs.dev/)
 - [ClickUp](https://clickup.com) One app to replace them all
