@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Final standalone menubar app for MD→RT with zero external dependencies
+MD→RT Menubar App - Consolidated version with configurable logging
 """
 
 import threading
@@ -8,43 +8,109 @@ import time
 import logging
 import rumps
 import re
+import os
+import argparse
+import sys
 from AppKit import NSPasteboard, NSObject
 from Foundation import NSData, NSString, NSUTF8StringEncoding
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-log = logging.getLogger("md2rt")
+def setup_logging(level):
+    """Setup logging based on command line argument."""
+    if level == 'quiet':
+        log_level = logging.WARNING
+        format_str = "%(levelname)s %(message)s"
+    elif level == 'normal':
+        log_level = logging.INFO
+        format_str = "%(asctime)s %(levelname)s %(message)s"
+    elif level == 'verbose':
+        log_level = logging.DEBUG
+        format_str = "%(asctime)s %(levelname)s %(message)s"
+    elif level == 'debug':
+        log_level = logging.DEBUG
+        format_str = "%(asctime)s %(levelname)s %(funcName)s:%(lineno)d %(message)s"
+    else:
+        log_level = logging.INFO
+        format_str = "%(asctime)s %(levelname)s %(message)s"
+    
+    logging.basicConfig(level=log_level, format=format_str)
+    return logging.getLogger("md2rt")
 
 def is_markdown(text):
     """Check if text contains markdown formatting."""
     if not text or len(text.strip()) < 3:
         return False
     
-    # Common markdown patterns
-    patterns = [
-        r'\*\*.*?\*\*',      # **bold**
-        r'\*.*?\*',          # *italic*
-        r'`.*?`',            # `code`
-        r'#+\s+',            # # heading
-        r'\[.*?\]\(.*?\)',   # [link](url)
-        r'!\[.*?\]\(.*?\)',  # ![alt](url)
-        r'^\s*[-*+]\s+',     # - list item
-        r'^\s*\d+\.\s+',     # 1. numbered list
-        r'^\s*>\s+',         # > blockquote
-        r'```[\s\S]*?```',   # ```code block```
-        r'^\s*\|.*\|.*\|',   # | table |
-        r'^\s*`{3,}',        # ``` code block start
-        r'^\s*`{3,}',        # ``` code block end
+    # Skip if text appears to be already converted HTML
+    if '<' in text and '>' in text:
+        # Check for common HTML tags that indicate already converted content
+        html_indicators = ['<h1', '<h2', '<h3', '<p', '<strong', '<em', '<ul', '<ol', '<li', '<code', '<pre']
+        if any(indicator in text for indicator in html_indicators):
+            return False
+    
+    # Skip if text appears to be already converted Rich Text
+    rich_text_indicators = ['style=', 'font-family:', 'color:', 'background-color:']
+    if any(indicator in text for indicator in rich_text_indicators):
+        return False
+    
+    # Skip if text contains mostly GitHub badges or non-content Markdown
+    badge_patterns = [
+        r'!\[.*?\]\(https?://.*?\)',  # Image badges
+        r'\[.*?\]\(https?://.*?\)',   # Link badges
+        r'https?://.*?\.svg',         # SVG badge URLs
+        r'img\.shields\.io',          # Shields.io badges
     ]
     
+    badge_count = 0
+    for pattern in badge_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            badge_count += 1
+    
+    # If more than 50% of the text is badges, skip it
+    if badge_count > 0 and len(text.split('\n')) > 0:
+        lines = text.split('\n')
+        badge_lines = sum(1 for line in lines if any(re.search(pattern, line, re.IGNORECASE) for pattern in badge_patterns))
+        if badge_lines / len(lines) > 0.5:
+            return False
+    
+    # Common markdown patterns (more strict matching)
+    patterns = [
+        r'^\s*#\s+\w+',        # Headers with content
+        r'^\s*##\s+\w+',       # Subheaders with content
+        r'^\s*###\s+\w+',      # Subsubheaders with content
+        r'^\s*[-*+]\s+\w+',    # Unordered lists with content
+        r'^\s*\d+\.\s+\w+',    # Ordered lists with content
+        r'\*\*[^*]+\*\*',      # Bold with content
+        r'\*[^*]+\*',          # Italic with content
+        r'`[^`]+`',            # Inline code with content
+        r'^\s*```[\s\S]*?```', # Code blocks
+        r'^\s*>\s+\w+',        # Blockquotes with content
+        r'\[[^\]]+\]\([^)]+\)', # Links with content
+        r'!\[[^\]]*\]\([^)]+\)', # Images with content
+    ]
+    
+    # Count how many patterns match
+    match_count = 0
     for pattern in patterns:
         if re.search(pattern, text, re.MULTILINE):
-            return True
+            match_count += 1
     
-    return False
+    # Only consider it Markdown if we have multiple strong indicators
+    # This prevents false positives on text with just one or two Markdown-like characters
+    return match_count >= 2
+
+def markdown_to_styled_html_and_text(md_text):
+    """Convert markdown to styled HTML using external API."""
+    try:
+        # Try to use the external API first
+        from .converter import markdown_to_styled_html_and_text as api_converter
+        return api_converter(md_text)
+    except ImportError:
+        # Fallback to built-in converter if external module not available
+        log.warning("External API not available, using built-in converter")
+        return simple_markdown_to_html(md_text), md_text
 
 def simple_markdown_to_html(md_text):
-    """Convert markdown to HTML using simple regex replacements."""
+    """Fallback markdown to HTML converter."""
     html = md_text
     
     # Headers
@@ -121,13 +187,6 @@ def simple_markdown_to_html(md_text):
     
     html = '\n'.join(result_lines)
     
-    return html
-
-def markdown_to_styled_html_and_text(md_text):
-    """Convert markdown to styled HTML."""
-    # Convert markdown to HTML using our simple parser
-    html = simple_markdown_to_html(md_text)
-    
     # Add basic styling
     styled_html = f"""
     <meta charset='utf-8'>
@@ -151,7 +210,7 @@ def markdown_to_styled_html_and_text(md_text):
     {html}
     """
     
-    return styled_html, md_text
+    return styled_html
 
 def read_plain_text_from_pasteboard():
     """Read plain text from the clipboard."""
@@ -184,9 +243,12 @@ def add_styled_html_to_pasteboard_preserving_original(html, original_text):
         return False
 
 class Md2RtMenuApp(rumps.App):
-    def __init__(self):
+    def __init__(self, log_level='normal'):
         super().__init__("MD→RT", icon=None, quit_button=None)
-
+        
+        # Setup logging
+        self.log = setup_logging(log_level)
+        
         # State
         self._running = False
         self._thread = None
@@ -195,6 +257,7 @@ class Md2RtMenuApp(rumps.App):
         self._start_item = rumps.MenuItem('Start', callback=self.start_clicked)
         self._stop_item = rumps.MenuItem('Stop', callback=self.stop_clicked)
         self._quit_item = rumps.MenuItem('Quit', callback=self.quit_clicked)
+        self._debug_item = rumps.MenuItem('Debug Info', callback=self.debug_clicked)
 
         # Auto-start when launched
         self.start_watcher()
@@ -206,13 +269,15 @@ class Md2RtMenuApp(rumps.App):
 
         # Add only the appropriate items based on state
         if self._running:
-            # When running, show only Stop and Quit
+            # When running, show Stop, Debug, and Quit
             self.menu.add(self._stop_item)
+            self.menu.add(self._debug_item)
             self.menu.add(rumps.separator)
             self.menu.add(self._quit_item)
         else:
-            # When stopped, show only Start and Quit
+            # When stopped, show Start, Debug, and Quit
             self.menu.add(self._start_item)
+            self.menu.add(self._debug_item)
             self.menu.add(rumps.separator)
             self.menu.add(self._quit_item)
 
@@ -221,6 +286,7 @@ class Md2RtMenuApp(rumps.App):
         if self._running:
             return
 
+        self.log.info("🚀 Starting clipboard watcher...")
         self._running = True
         self._thread = threading.Thread(target=self._run_clipboard_watcher, daemon=True)
         self._thread.start()
@@ -230,9 +296,9 @@ class Md2RtMenuApp(rumps.App):
 
         # Verify thread is running
         if self._thread.is_alive():
-            log.info("✅ Clipboard watcher thread started successfully")
+            self.log.info("✅ Clipboard watcher thread started successfully")
         else:
-            log.error("❌ Failed to start clipboard watcher thread")
+            self.log.error("❌ Failed to start clipboard watcher thread")
             self._running = False
 
         self._update_menu()
@@ -243,60 +309,93 @@ class Md2RtMenuApp(rumps.App):
         if not self._running:
             return
 
+        self.log.info("🛑 Stopping clipboard watcher...")
         self._running = False
         self._update_menu()
         rumps.notification("MD→RT", "Stopped", "Stopped watching clipboard")
+
+    def debug_clicked(self, _):
+        """Show debug information."""
+        self.log.info("🔍 Debug info requested")
+        
+        # Check clipboard contents
+        text = read_plain_text_from_pasteboard()
+        if text:
+            self.log.info(f"📋 Current clipboard text: {repr(text[:200])}...")
+            is_md = is_markdown(text)
+            self.log.info(f"📝 Is markdown: {is_md}")
+            
+            if is_md:
+                html, plain = markdown_to_styled_html_and_text(text)
+                self.log.info(f"🔄 Generated HTML length: {len(html)}")
+                self.log.info(f"🔄 HTML preview: {html[:500]}...")
+        else:
+            self.log.info("📋 No text in clipboard")
+        
+        # Show debug info notification
+        rumps.notification("MD→RT", "Debug Info", "Check terminal for debug information")
 
     def _run_clipboard_watcher(self):
         """Run the clipboard watcher."""
         pasteboard = NSPasteboard.generalPasteboard()
         last_change_count = int(pasteboard.changeCount())
         last_processed_hash = None
+        last_processed_content = None
 
-        log.info(f"🔍 Starting clipboard monitoring, initial count: {last_change_count}")
+        self.log.info(f"🔍 Starting clipboard monitoring, initial count: {last_change_count}")
 
         while self._running:
             try:
                 current = int(pasteboard.changeCount())
                 if current != last_change_count:
-                    log.info(f"📋 Clipboard changed: {last_change_count} -> {current}")
-                    last_change_count = current
+                    # Only log if we haven't processed this content before
+                    text = read_plain_text_from_pasteboard()
+                    if text and text != last_processed_content:
+                        self.log.info(f"📋 Clipboard changed: {last_change_count} -> {current}")
+                        last_change_count = current
+                        last_processed_content = text
 
-                    # Process the change
-                    self._process_clipboard_change()
+                        # Process the change
+                        self._process_clipboard_change()
+                    else:
+                        # Content is the same, just update the count
+                        last_change_count = current
 
                 time.sleep(0.3)
             except Exception as exc:
-                log.error(f"❌ Clipboard monitoring error: {exc}")
+                self.log.error(f"❌ Clipboard monitoring error: {exc}")
                 break
 
-        log.info("🔍 Clipboard monitoring stopped")
+        self.log.info("🔍 Clipboard monitoring stopped")
 
     def _process_clipboard_change(self):
         """Process clipboard change."""
         try:
             text = read_plain_text_from_pasteboard()
             if not text:
-                log.debug("📋 No text in clipboard")
+                self.log.debug("📋 No text in clipboard")
                 return
 
             # Check if it's markdown
             if not is_markdown(text):
-                log.debug("📝 Not Markdown, ignoring")
+                self.log.debug("📝 Not Markdown, ignoring")
                 return
 
-            log.info("✅ Markdown detected, converting...")
+            self.log.info("✅ Markdown detected, converting...")
 
             # Convert to HTML
             html, plain = markdown_to_styled_html_and_text(text)
-            log.info(f"🔄 Conversion complete, HTML length: {len(html)}")
+            self.log.info(f"🔄 Conversion complete, HTML length: {len(html)}")
 
             # Add to clipboard
-            add_styled_html_to_pasteboard_preserving_original(html, text)
-            log.info("✅ Styled HTML added to clipboard!")
+            success = add_styled_html_to_pasteboard_preserving_original(html, text)
+            if success:
+                self.log.info("✅ Styled HTML added to clipboard!")
+            else:
+                self.log.error("❌ Failed to add HTML to clipboard")
 
         except Exception as exc:
-            log.error(f"❌ Processing error: {exc}")
+            self.log.error(f"❌ Processing error: {exc}")
             import traceback
             traceback.print_exc()
 
@@ -310,11 +409,31 @@ class Md2RtMenuApp(rumps.App):
         rumps.quit_application()
 
 def main():
-    """Main function"""
-    app = Md2RtMenuApp()
+    """Main function with command line argument parsing."""
+    parser = argparse.ArgumentParser(
+        description="MD→RT - Convert Markdown to Rich Text in your clipboard",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s                    # Normal logging (default)
+  %(prog)s --quiet           # Minimal logging (production)
+  %(prog)s --verbose         # Detailed logging (development)
+  %(prog)s --debug           # Maximum logging (debugging)
+        """
+    )
+    
+    parser.add_argument(
+        '--log-level', '-l',
+        choices=['quiet', 'normal', 'verbose', 'debug'],
+        default='normal',
+        help='Set logging level (default: normal)'
+    )
+    
+    args = parser.parse_args()
+    
+    # Create and run the app
+    app = Md2RtMenuApp(log_level=args.log_level)
     app.run()
 
 if __name__ == "__main__":
     main()
-
-
