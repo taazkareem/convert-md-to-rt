@@ -52,7 +52,7 @@ brew install pipx
 
 **Option 1: PyPI Install (recommended):**
 ```bash
-pipx run convert-md-to-rt
+pipx run --spec convert-md-to-rt md2rt-menubar
 ```
 
 *Available logging levels: `--quiet`, `--verbose`, `--debug`*
